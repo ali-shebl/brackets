@@ -645,8 +645,8 @@ define({
     "SAVE_FOLD_STATES_HELP"         : "Save fold states to disk when editor is closed and restore the folds when reopened",
     "ALWAYS_USE_INDENT_FOLD"        : "Always use indent fold",
     "ALWAYS_USE_INDENT_FOLD_HELP"   : "Always use level of indentation as a folding guideline",
-    "FADE_FOLD_BUTTONS"             : "Fade fold buttons",
-    "FADE_FOLD_BUTTONS_HELP"        : "Hides the fold buttons unless the mouse is over the gutter",
+    "HIDE_FOLD_BUTTONS"             : "Hide fold triangles",
+    "HIDE_FOLD_BUTTONS_HELP"        : "Hides the fold triangles unless the mouse is over the gutter",
     "MAX_FOLD_LEVEL"                : "Maximum number of nested folds",
     "MAX_FOLD_LEVEL_HELP"           : "Used to limit the number of nested folds to find and collapse when View -> Collapse All is called or Alt is held down when collapsing. Should improve performance for large files."
 });

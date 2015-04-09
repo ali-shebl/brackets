@@ -8,9 +8,10 @@
 /*global define, brackets*/
 define(function (require, exports, module) {
     "use strict";
+    
     var PreferencesManager      = brackets.getModule("preferences/PreferencesManager"),
-        prefs                   = PreferencesManager.getExtensionPrefs("code-folding"),
         strings                 = brackets.getModule("strings"),
+        prefs                   = PreferencesManager.getExtensionPrefs("code-folding"),
         store                   = {},
         foldsKey                = "folds";
 
@@ -25,8 +26,8 @@ define(function (require, exports, module) {
                            {name: strings.ALWAYS_USE_INDENT_FOLD, description: strings.ALWAYS_USE_INDENT_FOLD_HELP});
     prefs.definePreference("enableRegionFolding", "boolean", true,
                            {name: strings.ENABLE_REGION_FOLDING, description: strings.ENABLE_REGION_FOLDING});
-    prefs.definePreference("fadeFoldButtons", "boolean", false,
-                           {name: strings.FADE_FOLD_BUTTONS, description: strings.FADE_FOLD_BUTTONS_HELP});
+    prefs.definePreference("hideUntilMouseover", "boolean", false,
+                           {name: strings.HIDE_FOLD_BUTTONS, description: strings.HIDE_FOLD_BUTTONS_HELP});
     prefs.definePreference("maxFoldLevel", "number", 2,
                            {name: strings.MAX_FOLD_LEVEL, description: strings.MAX_FOLD_LEVEL_HELP});
     prefs.definePreference("folds", "object", {});
@@ -106,11 +107,7 @@ define(function (require, exports, module) {
     }
 
     module.exports.getFolds = getFolds;
-
     module.exports.setFolds = setFolds;
-
     module.exports.getSetting = getSetting;
-
     module.exports.clearAllFolds = clearAllFolds;
-
 });

@@ -26,18 +26,11 @@
  * @date 10/24/13 9:35:26 AM
  */
 /*jslint vars: true, plusplus: true, devel: true, nomen: true, indent: 4, maxerr: 50 */
-/*global define, require, $, brackets*/
-
-require.config({
-    paths: {
-        "text" : "lib/text",
-        "i18n" : "lib/i18n"
-    },
-    locale: brackets.getLocale()
-});
+/*global define, $, brackets*/
 
 define(function (require, exports, module) {
     "use strict";
+    
     var CodeMirror              = brackets.getModule("thirdparty/CodeMirror2/lib/codemirror"),
         Strings                 = brackets.getModule("strings"),
         AppInit                 = brackets.getModule("utils/AppInit"),
@@ -53,11 +46,11 @@ define(function (require, exports, module) {
         COLLAPSE                = "codefolding.collapse",
         EXPAND                  = "codefolding.expand",
         EXPAND_ALL              = "codefolding.expand.all",
-        gutterName              = "CodeMirror-foldgutter",
+        GUTTER_NAME             = "CodeMirror-foldgutter",
         COLLAPSE_CUSTOM_REGIONS = "codefolding.collapse.customregions";
 
     ExtensionUtils.loadStyleSheet(module, "main.less");
-
+    
     //load code mirror addons
     brackets.getModule(["thirdparty/CodeMirror2/addon/fold/brace-fold"]);
     brackets.getModule(["thirdparty/CodeMirror2/addon/fold/comment-fold"]);
@@ -83,13 +76,12 @@ define(function (require, exports, module) {
         if (!editor || !saveFolds) { return; }
 
         var cm = editor._codeMirror;
-        if (!cm) {return; }
         var path = editor.document.file.fullPath;
         var folds = cm._lineFolds || prefs.getFolds(path);
         cm._lineFolds = cm.getValidFolds(folds);
         prefs.setFolds(path, cm._lineFolds);
         Object.keys(cm._lineFolds).forEach(function (line) {
-            cm.foldCode(+line);
+            cm.foldCode(Number(line));
         });
     }
 
@@ -100,6 +92,7 @@ define(function (require, exports, module) {
     function saveLineFolds(editor) {
         var saveFolds = prefs.getSetting("saveFoldStates");
         if (!editor || !saveFolds) { return; }
+        
         var folds = editor._codeMirror._lineFolds || {};
         var path = editor.document.file.fullPath;
         if (Object.keys(folds).length) {
@@ -113,10 +106,10 @@ define(function (require, exports, module) {
       * Event handler for gutter click. Manages folding and unfolding code regions. If the Alt key
       * is pressed while clicking the fold gutter, child code fragments are also folded/unfolded
       * up to a level defined in the `maxFoldLevel' preference.
-      * @param {object} cm the codeMirror object
+      * @param {!CodeMirror} cm the CodeMirror object
       * @param {number} line the line number for the clicked gutter
       * @param {string} gutter the name of the gutter element clicked
-      * @param {object} event the underlying dom event triggered for the gutter click
+      * @param {!KeyboardEvent} event the underlying dom event triggered for the gutter click
       */
     function onGutterClick(cm, line, gutter, event) {
         var opts = cm.state.foldGutter.options, pos = CodeMirror.Pos(line);
@@ -124,7 +117,7 @@ define(function (require, exports, module) {
         var range;
         var _lineFolds = cm._lineFolds;
         if (cm.isFolded(line)) {
-            if (event.altKey) {//unfold code including children
+            if (event.altKey) { // unfold code including children
                 range = _lineFolds[line];
                 CodeMirror.commands.unfoldAll(cm, range.from.line, range.to.line);
             } else {
@@ -132,8 +125,7 @@ define(function (require, exports, module) {
             }
         } else {
             if (event.altKey) {
-                var rf = CodeMirror.fold.auto;
-                range = rf(cm, pos);
+                range = CodeMirror.fold.auto(cm, pos);
                 if (range) {
                     CodeMirror.commands.foldToLevel(cm, range.from.line, range.to.line);
                 }
@@ -174,7 +166,7 @@ define(function (require, exports, module) {
         }
         var cm = editor._codeMirror;
         var cursor = editor.getCursorPos(), i;
-        //move cursor up until a collapsible line is found
+        // Move cursor up until a collapsible line is found
         for (i = cursor.line; i >= 0; i--) {
             if (cm.foldCode(i)) {
                 editor.setCursorPos(i);
@@ -196,7 +188,7 @@ define(function (require, exports, module) {
 
     /**
       * Collapses all foldable regions in the current document. Folding is done up to a level 'n'
-      * which is defined in the `maxFoldLevel preference. Levels refer to fold heirarchies e.g., for the following
+      * which is defined in the `maxFoldLevel` preference. Levels refer to fold heirarchies e.g., for the following
       * code fragment, the function is level 1, the if statement is level 2 and the forEach is level 3
       *
       *     function sample() {
@@ -232,27 +224,30 @@ define(function (require, exports, module) {
       */
     function createGutter(editor) {
         var cm = editor._codeMirror;
-        if (!cm) {
-            return;
-        }
         var path = editor.document.file.fullPath, _lineFolds = prefs.getFolds(path);
         _lineFolds = _lineFolds || {};
         cm._lineFolds = _lineFolds;
         var gutters = cm.getOption("gutters").slice(0);
         var lnIndex = gutters.indexOf("CodeMirror-linenumbers");
-        gutters.splice(lnIndex + 1, 0, gutterName);
+        gutters.splice(lnIndex + 1, 0, GUTTER_NAME);
+        $(editor.getRootElement()).addClass("folding-enabled");
         cm.setOption("gutters",  gutters);
+        cm.refresh();  // force recomputing gutter width - .folding-enabled class affects linenumbers gutter which has existing cached width
         cm.setOption("foldGutter", {onGutterClick: onGutterClick});
 
         $(cm.getGutterElement()).on({
             mouseenter: function () {
-                if (prefs.getSetting("fadeFoldButtons")) {
+                if (prefs.getSetting("hideUntilMouseover")) {
                     foldGutter.updateInViewport(cm);
+                } else {
+                    $(editor.getRootElement()).addClass("over-gutter");
                 }
             },
             mouseleave: function () {
-                if (prefs.getSetting("fadeFoldButtons")) {
+                if (prefs.getSetting("hideUntilMouseover")) {
                     foldGutter.clearGutter(cm);
+                } else {
+                    $(editor.getRootElement()).removeClass("over-gutter");
                 }
             }
         });
@@ -266,7 +261,7 @@ define(function (require, exports, module) {
       */
     function onActiveEditorChanged(event, current, previous) {
         if (prefs.getSetting("enabled")) {
-            if (current && current._codeMirror.getOption("gutters").indexOf(gutterName) === -1) {
+            if (current && current._codeMirror.getOption("gutters").indexOf(GUTTER_NAME) === -1) {
                 createGutter(current);
                 restoreLineFolds(current);
             }
@@ -284,15 +279,18 @@ define(function (require, exports, module) {
     }
 
     /**
-        Initialise the extension
-    */
+     * Initialise the extension
+     */
     function init() {
-        if (CodeMirror.fold.combine || !prefs.getSetting("enabled")) {
+        if (!prefs.getSetting("enabled")) {
             return;
         }
         foldCode.init();
         foldGutter.init();
-        //register a global fold helper based on indentation folds
+        
+        // Many CodeMirror modes specify which fold helper should be used for that language. For a few that
+        // don't, we register helpers explicitly here. We also register global fold helpers for indent &
+        // custom regions, which cut across all languages.
         CodeMirror.registerGlobalHelper("fold", "indent", function (mode, cm) {
             return prefs.getSetting("alwaysUseIndentFold");
         }, indentFold);
@@ -340,7 +338,7 @@ define(function (require, exports, module) {
         var editor = EditorManager.getCurrentFullEditor();
         if (editor) {
             var cm = editor._codeMirror;
-            if (prefs.getSetting("fadeFoldButtons")) {
+            if (prefs.getSetting("hideUntilMouseover")) {
                 foldGutter.clearGutter(cm);
             } else {
                 foldGutter.updateInViewport(cm);

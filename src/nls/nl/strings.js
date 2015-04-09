@@ -470,7 +470,7 @@ define({
     "SAVE_FOLD_STATES_HELP"         : "Vouwstatus bewaren op schijf als editor gesloten wordt en herstellen wanneer opnieuw geopend",
     "ALWAYS_USE_INDENT_FOLD"        : "Altijd vouwindentatie gebruiken",
     "ALWAYS_USE_INDENT_FOLD_HELP"   : "Altijd het indentatieniveau als vouwrichtlijn gebruiken",
-    "FADE_FOLD_BUTTONS"             : "Vouwknoppen vervagen",
-    "FADE_FOLD_BUTTONS_HELP"        : "Verberg de vouwknoppen, behalve als de muis over de goot hangt"
+    "HIDE_FOLD_BUTTONS"             : "Vouwknoppen vervagen",
+    "HIDE_FOLD_BUTTONS_HELP"        : "Verberg de vouwknoppen, behalve als de muis over de goot hangt"
 });
 /* Last translated for 752856d58d2e9dde14e1af6be615bb7080727b7a */
